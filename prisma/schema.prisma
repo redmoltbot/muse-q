@@ -1,17 +1,17 @@
 // Muse-Q data model.
 //
-// Local dev uses SQLite. To run on Postgres (e.g. Vercel + Neon):
-//   1. Change the datasource below to:  provider = "postgresql"
-//   2. Set DATABASE_URL to the Postgres connection string.
-//   3. Run `prisma migrate dev` (or `prisma migrate deploy` in prod).
-// No schema changes are needed — the model is portable across both.
+// Production uses Postgres (e.g. Vercel + Neon):
+//   1. Set DATABASE_URL to the Postgres connection string.
+//   2. Run `prisma migrate deploy` (Vercel runs this automatically on deploy).
+// Local dev can keep SQLite by switching the provider below back to "sqlite"
+// with DATABASE_URL="file:./dev.db" — the model is portable across both.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
