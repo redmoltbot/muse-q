@@ -1,0 +1,65 @@
+// Muse-Q data model.
+//
+// Local dev uses SQLite. To run on Postgres (e.g. Vercel + Neon):
+//   1. Change the datasource below to:  provider = "postgresql"
+//   2. Set DATABASE_URL to the Postgres connection string.
+//   3. Run `prisma migrate dev` (or `prisma migrate deploy` in prod).
+// No schema changes are needed — the model is portable across both.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum TicketStatus {
+  waiting
+  serving
+  done
+  no_show
+}
+
+model Queue {
+  id                Int      @id @default(autoincrement())
+  name              String
+  prefix            String   @default("A") // ticket prefix, e.g. "A" -> A001
+  avgServiceMinutes Int      @default(5) // used for wait-time estimates
+  isOpen            Boolean  @default(true)
+  nextSeq           Int      @default(1) // next ticket sequence number for this queue
+  createdAt         DateTime @default(now())
+  counters          Counter[]
+  tickets           Ticket[]
+}
+
+model Counter {
+  id      Int     @id @default(autoincrement())
+  queueId Int
+  queue   Queue   @relation(fields: [queueId], references: [id], onDelete: Cascade)
+  name    String // e.g. "Counter 1"
+  tickets Ticket[]
+}
+
+model Ticket {
+  id           Int          @id @default(autoincrement())
+  queueId      Int
+  queue        Queue        @relation(fields: [queueId], references: [id], onDelete: Cascade)
+  seq          Int // per-queue sequence number
+  number       String // human ticket number, e.g. "A012"
+  customerName String?
+  status       TicketStatus @default(waiting)
+  counterId    Int?
+  counter      Counter?     @relation(fields: [counterId], references: [id], onDelete: SetNull)
+  createdAt    DateTime     @default(now())
+  calledAt     DateTime?
+
+  @@unique([queueId, seq])
+  @@index([queueId, status])
+}
+
+model Setting {
+  key   String @id // e.g. "adminPinHash", "staffPinHash"
+  value String
+}
