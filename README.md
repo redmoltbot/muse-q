@@ -103,3 +103,5 @@ app/
   admin/           admin console
   api/             all data endpoints (queues, tickets, staff, display, admin, auth)
 ```
+
+<!-- Auto-deploy test 2026-11-14: push-to-deploy check, no code change. -->
